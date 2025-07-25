@@ -13,7 +13,7 @@ on:
 jobs:
   clean:
     name: Clean
-    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-24.04-arm' || 'depot-ubuntu-24.04-arm' }}
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: read
@@ -42,7 +42,7 @@ jobs:
 
   build:
     name: Build
-    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-24.04-arm' || 'depot-ubuntu-24.04-arm' }}
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: read
@@ -70,7 +70,7 @@ jobs:
 
   test:
     name: Test
-    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-24.04-arm' || 'depot-ubuntu-24.04-arm' }}
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: read
@@ -90,7 +90,7 @@ jobs:
 
   lint:
     name: Lint
-    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-24.04-arm' || 'depot-ubuntu-24.04-arm' }}
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: read
@@ -118,10 +118,7 @@ jobs:
 
   ui:
     name: UI
-    permissions:
-      contents: read
-      actions: write
-    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-24.04-arm' || 'depot-ubuntu-24.04-arm' }}
+    runs-on: ubuntu-24.04-arm
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -184,9 +181,9 @@ jobs:
         run: |
           test -z "$(git status --porcelain)" || (git status; git diff; false)
 
-  integration-shard:
-    name: Integration ${{ matrix.shard }}/3
-    runs-on: depot-ubuntu-24.04-arm-32
+  integration:
+    name: Integration
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: read

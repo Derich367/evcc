@@ -43,10 +43,7 @@ jobs:
     needs:
       - guard
       - call-build-workflow
-    runs-on: depot-ubuntu-24.04-arm
-    permissions:
-      contents: read
-      id-token: write # depot OIDC
+    runs-on: ubuntu-24.04-arm
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -57,6 +54,7 @@ jobs:
       - name: Login
         uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
         with:
+          registry: api.repoflow.io
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASS }}
 
@@ -86,110 +84,13 @@ jobs:
             RELEASE=1
           tags: ${{ steps.meta.outputs.tags }}
 
-  apt:
-    name: Github & APT
-    needs:
-      - guard
-      - call-build-workflow
-    runs-on: depot-ubuntu-24.04-arm
-
-    permissions:
-      contents: write
-      actions: read
-
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Setup Go
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
-        with:
-          go-version-file: go.mod
-        id: go
-
-      - name: Patch ASN1
-        run: make patch-asn1-sudo
-
-      - name: Get dist from cache
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
-        id: cache-dist
-        with:
-          path: dist
-          key: ${{ runner.os }}-${{ github.sha }}-dist
-
-      # gokrazy image
-      # - name: Prepare Image
-      #   run: |
-      #     make prepare-image
-      #     sed -i -e 's#-ld.*$#& -X github.com/evcc-io/evcc/server/updater.Password=${{ secrets.IMAGE_PASS }}#' buildflags/github.com/evcc-io/evcc/buildflags.txt
-      #     mkdir /home/runner/.config/gokrazy
-      #     echo ${{ secrets.IMAGE_PASS }}> /home/runner/.config/gokrazy/http-password.txt
-
-      # - name: Build Image
-      #   run: make image
-
-      # - name: Build Root Filesystem
-      #   run: make image-rootfs
-
-      - name: Create Github Release
-        uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7
-        with:
-          version: '~> v2'
-          args: release --clean
-        env:
-          # use RELEASE_DEPLOY_TOKEN for access to evcc-io/homebrew-tap
-          GITHUB_TOKEN: ${{ secrets.RELEASE_DEPLOY_TOKEN }}
-          # a bugfix release of an older line must not move the homebrew formula
-          # or the Github latest release marker
-          MAKE_LATEST: ${{ needs.guard.outputs.latest }}
-          # macOS code signing and notarization
-          MACOS_SIGN_P12: ${{ secrets.MACOS_SIGN_P12 }}
-          MACOS_SIGN_PASSWORD: ${{ secrets.MACOS_SIGN_PASSWORD }}
-          MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
-          MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
-          MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
-
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
-        with:
-          python-version: 3.12
-
-      - name: Install Cloudsmith CLI
-        run: pip install -r .github/requirements.txt
-
-      - name: Publish .deb to Cloudsmith
-        env:
-          CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
-        run: make apt-release
-
-  demo:
-    name: Demo
-    needs:
-      - guard
-      - docker
-    if: needs.guard.outputs.latest == 'true'
-    runs-on: depot-ubuntu-24.04-arm
-
-    permissions:
-      contents: read
-
-    env:
-      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-      - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1 # master
-      - run: flyctl deploy --local-only --config packaging/fly.toml
 
   hassio:
     name: Hassio Addon
     needs:
       - guard
       - docker
-    if: needs.guard.outputs.latest == 'true'
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: read
@@ -198,8 +99,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          repository: evcc-io/hassio-addon
-          token: ${{ secrets.HASSIO_DEPLOY_TOKEN }}
+          repository: Derich367/evcc-hassio-addon
+          token: ${{ secrets.GH_TOKEN }}
           path: ./hassio
 
       - name: Update version
