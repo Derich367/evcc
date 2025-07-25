@@ -25,9 +25,9 @@ jobs:
       - name: Login
         uses: docker/login-action@v3
         with:
-          registry: api.repoflow.io
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PASS }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Buildx
         uses: docker/setup-buildx-action@v3
@@ -37,7 +37,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            api.repoflow.io/repoflow-7774/derich367/library/evcc
+            ghcr.io/derich367/evcc
 
       - name: Publish
         uses: docker/build-push-action@v6
