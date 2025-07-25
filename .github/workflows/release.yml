@@ -37,7 +37,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            evcc/evcc
+            api.repoflow.io/repoflow-7774/derich367/library/evcc
 
       - name: Publish
         uses: docker/build-push-action@v6
