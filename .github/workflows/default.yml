@@ -233,38 +233,7 @@ jobs:
       - name: Build Go
         run: make build
 
-      - name: Get Playwright version
-        id: playwright-version
-        run: echo "PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package-lock.json').packages['node_modules/@playwright/test'].version)")" >> $GITHUB_ENV
-
-      - name: Cache Playwright browsers
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
-
-      - name: Install Playwright (browsers + deps)
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: vpx playwright install --with-deps chromium
-        timeout-minutes: 5
-
-      - name: Save Playwright browsers
-        # one writer, the shards would race for the same key
-        if: github.ref == 'refs/heads/master' && steps.playwright-cache.outputs.cache-hit != 'true' && matrix.shard == 1
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
-
-      - name: Run tests
-        run: vpx playwright test --shard=${{ matrix.shard }}/3
-        timeout-minutes: 20
-        env:
-          TZ: Europe/Berlin
-
-      - name: Upload Playwright Report
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-report-${{ matrix.shard }}
