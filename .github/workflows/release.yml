@@ -7,6 +7,7 @@ on:
   push:
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
 
 jobs:
   guard:
@@ -31,9 +32,8 @@ jobs:
         run: .github/scripts/release-tag.sh "${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
 
   call-build-workflow:
-    needs:
-      - guard
-    uses: evcc-io/evcc/.github/workflows/default.yml@master
+    if: startsWith(github.ref, 'refs/tags')
+    uses: Derich367/evcc/.github/workflows/default.yml@master
     permissions:
       contents: read
       actions: write
@@ -44,6 +44,9 @@ jobs:
       - guard
       - call-build-workflow
     runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - uses: actions/checkout@v7
@@ -54,9 +57,9 @@ jobs:
       - name: Login
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
         with:
-          registry: api.repoflow.io
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PASS }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       # depot builders keep the Dockerfile's cache mounts on their own volumes,
       # so they need neither buildx nor the cache dance
@@ -68,10 +71,7 @@ jobs:
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
         with:
           images: |
-            evcc/evcc
-          # a bugfix release of an older line must not move :latest
-          flavor: |
-            latest=${{ needs.guard.outputs.latest }}
+            ghcr.io/derich367/evcc
 
       - name: Publish
         uses: depot/build-push-action@98e78adca7817480b8185f474a400b451d74e287 # v1.18.0
@@ -100,7 +100,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: Derich367/evcc-hassio-addon
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.HASSIO_DEPLOY_TOKEN }}
           path: ./hassio
 
       - name: Update version
@@ -120,7 +120,6 @@ jobs:
     name: Delete Release Branch
     needs:
       - docker
-      - apt
     runs-on: depot-ubuntu-24.04-arm
 
     permissions:
