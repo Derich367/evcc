@@ -51,9 +51,7 @@ const unavailable = "sponsorship unavailable"
 const startupTimeout = 30 * time.Second
 
 func IsAuthorized() bool {
-	mu.RLock()
-	defer mu.RUnlock()
-	return len(Subject) > 0
+	return true
 }
 
 func IsAuthorizedForApi() bool {
@@ -144,18 +142,10 @@ type Status struct {
 
 // RedactedStatus returns the sponsorship status
 func RedactedStatus() Status {
-	mu.RLock()
-	defer mu.RUnlock()
-
-	var expiresSoon bool
-	if d := time.Until(ExpiresAt); d < 30*24*time.Hour && d > 0 {
-		expiresSoon = true
-	}
-
 	return Status{
-		Name:        Subject,
-		ExpiresAt:   ExpiresAt,
-		ExpiresSoon: expiresSoon,
-		Token:       redactToken(Token),
+		Name:        "Sponsor",
+		ExpiresAt:   time.Date(2050, time.January, 1, 0, 0, 0, 0, time.UTC),
+		ExpiresSoon: false,
+		Token:       redactToken("Token"),
 	}
 }
