@@ -4,6 +4,9 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Project Overview
 
+- This is a private-use fork of evcc that unlocks premium features without a token. Preserve this behavior when making changes.
+- This repository is regularly updated from upstream. Preserve fork-specific changes when incorporating upstream updates.
+- Unnecessary CI pipelines are disabled or adapted for this fork. Preserve these adjustments when updating workflows from upstream.
 - evcc is an extensible EV Charge Controller and home energy management system written in Go with a Vue.js frontend
 - The system manages electric vehicle charging, integrates with solar systems, and provides local energy management without cloud dependencies
 - Architecture follows a plugin-based approach for device integrations

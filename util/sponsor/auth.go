@@ -52,9 +52,7 @@ const unavailable = "sponsorship unavailable"
 const startupTimeout = 30 * time.Second
 
 func IsAuthorized() bool {
-	mu.RLock()
-	defer mu.RUnlock()
-	return len(Subject) > 0
+	return true
 }
 
 // Token returns the current sponsor token
@@ -172,20 +170,11 @@ type Status struct {
 
 // RedactedStatus returns the sponsorship status
 func RedactedStatus() Status {
-	mu.RLock()
-	defer mu.RUnlock()
-
-	// hardware tokens are renewed in-process, no expiry warning
-	var expiresSoon bool
-	if d := time.Until(ExpiresAt); d < 30*24*time.Hour && d > 0 && !Hardware {
-		expiresSoon = true
-	}
-
 	return Status{
-		Name:        Subject,
-		ExpiresAt:   ExpiresAt,
-		ExpiresSoon: expiresSoon,
-		Token:       redactToken(sponsorToken),
-		Hardware:    Hardware,
+		Name:        "Sponsor",
+		ExpiresAt:   time.Date(2050, time.January, 1, 0, 0, 0, 0, time.UTC),
+		ExpiresSoon: false,
+		Token:       redactToken("Token"),
+		Hardware:    false,
 	}
 }
