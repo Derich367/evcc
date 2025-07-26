@@ -87,9 +87,9 @@ type sponsorStatus struct {
 
 // Status returns the sponsorship status
 func Status() sponsorStatus {
-    return sponsorStatus{
-        Name:        "Sponsor",
+	return sponsorStatus{
+    	Name:        "Sponsor",
         ExpiresAt:   time.Date(2050, time.January, 1, 0, 0, 0, 0, time.UTC),
         ExpiresSoon: false,
-    }
+	}
 }
