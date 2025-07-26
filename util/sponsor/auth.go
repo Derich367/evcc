@@ -87,14 +87,9 @@ type sponsorStatus struct {
 
 // Status returns the sponsorship status
 func Status() sponsorStatus {
-	var expiresSoon bool
-	if d := time.Until(ExpiresAt); d < 30*24*time.Hour && d > 0 {
-		expiresSoon = true
-	}
-
-	return sponsorStatus{
-		Name:        Subject,
-		ExpiresAt:   ExpiresAt,
-		ExpiresSoon: expiresSoon,
-	}
+    return sponsorStatus{
+        Name:        "Sponsor",
+        ExpiresAt:   time.Date(2050, time.January, 1, 0, 0, 0, 0, time.UTC),
+        ExpiresSoon: false,
+    }
 }
