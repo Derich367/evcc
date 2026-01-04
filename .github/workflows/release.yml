@@ -7,18 +7,23 @@ on:
   push:
     tags:
       - "*"
-  workflow_dispatch:
 
 jobs:
   call-build-workflow:
     if: startsWith(github.ref, 'refs/tags')
     uses: Derich367/evcc/.github/workflows/default.yml@master
+    permissions:
+      contents: read
+      actions: write
 
   docker:
     name: Publish Docker :release
     needs:
       - call-build-workflow
     runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - uses: actions/checkout@v6
@@ -61,14 +66,13 @@ jobs:
     runs-on: ubuntu-24.04-arm
 
     permissions:
-      contents: read
+      contents: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@master
         with:
           repository: Derich367/evcc-hassio-addon
-          token: ${{ secrets.GH_TOKEN }}
           path: ./hassio
 
       - name: Update version
