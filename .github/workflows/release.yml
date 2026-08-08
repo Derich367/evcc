@@ -12,7 +12,7 @@ on:
 jobs:
   guard:
     name: Validate Tag
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
     outputs:
@@ -61,10 +61,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # depot builders keep the Dockerfile's cache mounts on their own volumes,
-      # so they need neither buildx nor the cache dance
-      - name: Setup Depot
-        uses: depot/setup-action@15c09a5f77a0840ad4bce955686522a257853461 # v1.7.1
+      - name: Setup Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+
+      - name: Restore build cache
+        uses: ./.github/actions/docker-cache
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
 
       - name: Meta
         id: meta
@@ -74,9 +78,8 @@ jobs:
             ghcr.io/derich367/evcc
 
       - name: Publish
-        uses: depot/build-push-action@98e78adca7817480b8185f474a400b451d74e287 # v1.18.0
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
         with:
-          project: ${{ secrets.DEPOT_PROJECT_ID }}
           context: .
           platforms: linux/amd64,linux/arm64,linux/arm/v6
           push: true
@@ -120,7 +123,7 @@ jobs:
     name: Delete Release Branch
     needs:
       - docker
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: write
